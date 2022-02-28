@@ -1,5 +1,124 @@
+// ============== API CALLS ============================
+
+const API = {
+  getAllContacts() {
+    return new Promise(function(resolve, reject) {
+      let request = new XMLHttpRequest();
+      request.open('GET', "http://localhost:3000/api/contacts");
+      request.responseType = 'json';
+    
+      request.addEventListener('load', event => {
+        if (request.status === 200) {
+          resolve(request.response);
+        } else {
+          reject({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        }
+      });
+      request.send();
+    });
+    
+    // # Async / await way
+    // let contacts = await fetch("/api/contacts").then(res => res.json());
+    // return contacts;
+    // Question, can I use responseType with async/await, if so how?
+  },
+  addContact(contact) {
+    return new Promise(function(resolve, reject) {
+      let request = new XMLHttpRequest();
+      request.open('POST', '/api/contacts/');
+      request.setRequestHeader('Content-Type', 'application/json');
+
+      request.addEventListener('load', event => {
+        if (request.status === 201) {
+          resolve(JSON.parse(request.response));
+        }
+        else if (request.status === 400) {
+          reject({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        }
+      })
+
+      request.send(contact);
+    })
+  },
+
+  deleteContact(contactID) {
+    return new Promise(function(resolve, reject) {
+      let request = new XMLHttpRequest();
+      request.open('DELETE', `/api/contacts/${contactID}`);
+
+      request.addEventListener('load', event => {
+        if (request.status === 204) {
+          resolve({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        } else if (request.status === 400) {
+          reject({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        }
+      });
+      
+      request.send();
+    })
+  },
+
+  editContact(contactID, updatedData) {
+    return new Promise(function(resolve, reject) {
+      let request = new XMLHttpRequest();
+      request.open('PUT', `/api/contacts/${contactID}`);
+      request.setRequestHeader('Content-Type', 'application/json');
+
+      request.addEventListener('load', event => {
+        if (request.status === 201) {
+          resolve({
+            status: request.status,
+            statusText: request.statusText,
+          })
+        } else if (request.status === 400) {
+          reject({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        }
+      });
+
+      request.send(updatedData);
+    });
+  },
+
+  getContact(contactId) {
+    return new Promise(function(resolve, reject) {
+      let request = new XMLHttpRequest();
+      request.open('GET', `/api/contacts/${contactId}`);
+      request.addEventListener('load', event => {
+        if (request.status === 200) {
+          resolve(JSON.parse(request.response));
+        } else {
+          reject({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        }
+      });
+
+      request.send();
+    })
+  },
+}
+// ================== RENDERING STUFF ===================
+
 function renderContactList(contactsList, contact) {
   let li = document.createElement('li');
+  li.id = contact.id;
+
   let h3 = document.createElement('h3');
   let nameH3 = document.createTextNode(contact.full_name);
   h3.appendChild(nameH3);
@@ -29,19 +148,15 @@ function renderContactList(contactsList, contact) {
   detailsDL.appendChild(emailDd);
   li.appendChild(detailsDL);
 
-  let editButton = document.createElement('a');
-  let editButtonText = document.createTextNode('Edit');
-  editButton.appendChild(editButtonText);
-  editButton.href = `/api/contacts/${contact.id}`;
-  editButton.classList.add('edit-contact');
+  let editButton = document.createElement('button');
+  editButton.textContent = 'Edit';
+  editButton.id = 'edit-contact';
   editButton.classList.add('btn');
   li.appendChild(editButton);
 
-  let deleteButton = document.createElement('a');
-  let deleteButtonText = document.createTextNode('Delete');
-  deleteButton.appendChild(deleteButtonText);
-  deleteButton.href = `/api/contacts/${contact.id}`;
-  deleteButton.classList.add('delete-contact');
+  let deleteButton = document.createElement('button');
+  deleteButton.textContent = 'Delete';
+  deleteButton.id = 'delete-contact';
   deleteButton.classList.add('btn');
   li.appendChild(deleteButton);
 
@@ -50,6 +165,7 @@ function renderContactList(contactsList, contact) {
 
 function renderContactForm(div, contact) {
   let form = document.createElement('form');
+  form.id = contact ? contact.id : '';
 
   let nameLabel = document.createElement('label');
   let nameLabelText = document.createTextNode('Full name:');
@@ -83,6 +199,7 @@ function renderContactForm(div, contact) {
 
   let submitButton = document.createElement('input');
   submitButton.setAttribute('type', 'submit');
+  submitButton.id = contact ? 'editSubmitBtn'  : 'addSubmitBtn';
 
   let cancelButton = document.createElement('button');
   cancelButton.id = 'cancelBtn';
@@ -103,230 +220,139 @@ function renderContactForm(div, contact) {
   div.appendChild(form);
 }
 
-const API = {
-  getAllContacts() {
-    return new Promise(function(resolve, reject) {
-      let request = new XMLHttpRequest();
-      request.open('GET', "http://localhost:3000/api/contacts");
-      request.responseType = 'json';
-    
-      request.addEventListener('load', event => {
-        if (request.status === 200) {
-          resolve(request.response);
-        } else {
-          reject({
-            status: request.status,
-            statusText: request.statusText,
-          });
-        }
-      });
-      request.send();
-    });
-    
-    // # Async / await way
-    // let contacts = await fetch("/api/contacts").then(res => res.json());
-    // return contacts;
-
-    // # XHR object way
-    // let request = new XMLHttpRequest();
-    // request.open('GET', "http://localhost:3000/api/contacts");
-    // request.responseType = 'json';
-  
-    // request.addEventListener('load', event => {
-    //   let contacts = request.response;
-    //   return contacts;
-    // });
-    // request.send();
-  },
-}
+// ========== RENDERING UI ==================
 
 const displayContacts = (ul) => {
   [...ul.children].forEach(child => child.remove());
-
-  let contacts = API.getAllContacts().then(contacts => {
-    contacts.forEach(contact => renderContactList(ul, contact));
-  }); // How to handle the error. 
+  API.getAllContacts().then(contacts => contacts.forEach(contact => renderContactList(ul, contact))); 
+  // Learn how to handle promise error
 };
 
-// maybe better to just delete
 function hideContacts(ul) {
   ul.setAttribute('hidden', true);
 }
 
-function submitContactForm() {
+// ========== HELPER FUNCTIONS : DATA SERIALIZER =================
+
+function formDatatoJson(formData) {
+  let json = {};
+
+  for (const pair of formData.entries()) {
+    json[pair[0]] = pair[1];
+  }
+  return json;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   // Display the contacts
-
   let ul = document.querySelector('ul');
   displayContacts(ul);
 
-  // Save a new contact
-  let formDiv = document.getElementById('contact_form');
-  let button = document.getElementById('add_contact');
-
-  button.addEventListener('click', event => {
-    console.log('add contact button clicked')
-    event.preventDefault();
-    // hide the contacts list
-    hideContacts(ul);
-    // render the form?
-    let addContactForm = document.querySelector('form');
-    if (!formDiv.contains(addContactForm)) {
-      renderContactForm(formDiv);
-    }
-
-    // listen for submit form
-    let form = document.querySelector('form');
-    form.addEventListener('submit', event => {
+  // Add a contact vs edit a contact - Rendering the form
+  let formDiv = document.getElementById('contactForm');
+  document.addEventListener('click', event => {
+    if (event.target.id === 'addBtn') {
       event.preventDefault();
-      console.log('Add Submit clicked');
-
-      let xhr = new XMLHttpRequest();
-      xhr.open('POST', 'http://localhost:3000/api/contacts/');
-      xhr.setRequestHeader('Content-Type', 'application/json');
-
-      function formDatatoJson(formData) {
-        let json = {};
-  
-        for (const pair of formData.entries()) {
-          json[pair[0]] = pair[1];
-        }
-        return json;
+      hideContacts(ul);
+      if (!formDiv.contains(document.querySelector('form'))) {
+        renderContactForm(formDiv);
       }
-
-      let data = new FormData(form);
-      let json = JSON.stringify(formDatatoJson(data));
-
-      xhr.addEventListener('load', event => {
-        // if fail
-        if (xhr.status === 400) {
-          alert(`Failed: ${xhr.status}. Please try again!`);
-        }
-
-        // regardless of fail or success, display contacts
-        displayContacts(ul);
-        ul.removeAttribute('hidden');
-        form.remove();
-      })
-
-      xhr.send(json);
-    })
-
-    // listen for cancel button, display display contact list
-    let cancelButton = document.querySelector('#cancelBtn');
-    cancelButton.addEventListener('click', event => {
-      console.log('Cancel button clicked');
+    } else if (event.target.id === 'edit-contact') {
       event.preventDefault();
-      ul.removeAttribute('hidden');
-      form.remove();
-    })
-  });
+      hideContacts(ul);
 
-  // Edit a contact
-
-  ul.addEventListener('click', event => {
-    if (event.target.tagName === 'A' && event.target.classList.contains('edit-contact')) {
-      event.preventDefault();
-      console.log('Edit button clicked');
-
-      let editURL = event.target.href;
-      let request = new XMLHttpRequest();
-      request.open('GET', event.target.href);
-      request.responseType = 'json';
-    
-      request.addEventListener('load', event => { 
-        let contact = request.response;
-        // hide the contacts list
-        hideContacts(ul);
-        // render the form with contact data
-        let addContactForm = document.querySelector('form');
-        if (!formDiv.contains(addContactForm)) {
+      let contactID = event.target.closest('li').id;
+      API.getContact(contactID).then((contact) => {
+        if (!formDiv.contains(document.querySelector('form'))) {
           renderContactForm(formDiv, contact);
         }
+      });
+    }
+  });
 
-        let form = document.querySelector('form');
-        form.addEventListener('submit', event => {
-          event.preventDefault();
-          console.log('Submit clicked');
+    // listen for form cancel button, display display contact list - delegate to body
+    document.addEventListener('click', event => {
+      if (event.target.id === 'cancelBtn') {
+        console.log('Cancel button clicked');
+        event.preventDefault();
+        ul.removeAttribute('hidden');
+        document.querySelector('form').remove();
+      }
+    })
 
-          let xhr = new XMLHttpRequest();
-          xhr.open('PUT', editURL);
-          xhr.setRequestHeader('Content-Type', 'application/json');
+  // listen for submit form - delegate event
+  document.addEventListener('submit', event => {
+    event.preventDefault();
+    let form = event.target;
+    let button = event.target.querySelector('[type="submit"]');
+    let data = new FormData(form);
+    let json = JSON.stringify(formDatatoJson(data));
 
-          function formDatatoJson(formData) {
-            let json = {};
-      
-            for (const pair of formData.entries()) {
-              json[pair[0]] = pair[1];
-            }
-            return json;
-          }
-    
-          let data = new FormData(form);
-          let json = JSON.stringify(formDatatoJson(data));
+    if (button.id === 'addSubmitBtn') {
+      API.addContact(json).catch(error => alert(`${error.status} ${error.statusText}`)); 
+    } else if (button.id === 'editSubmitBtn') {
+      let contactID = form.id;
+      API.editContact(contactID, json).catch(error => alert(`${error.status} ${error.statusText}`));
+    }
 
-          xhr.addEventListener('load', event => {
-            // if failed
-            if (xhr.status === 400) {
-              alert(`Failed: ${xhr.status}. Please try again!`);
-            }
+    displayContacts(ul);
+    ul.removeAttribute('hidden');
+    form.remove();
+  })
 
-            // regardless of failure or success, re-render the contacts list
-            displayContacts(ul);
-            ul.removeAttribute('hidden');
-            form.remove();
-          })
-
-          xhr.send(json);
-        });
-
-        let cancelButton = document.querySelector('#cancelBtn');
-        cancelButton.addEventListener('click', event => {
-          console.log('Cancel button clicked');
-          event.preventDefault();
-          ul.removeAttribute('hidden');
-          form.remove();
-        });
-      })
-
-      request.send();
+  // Delete a contact - delegate event to document
+  document.addEventListener('click', event => {
+    if (event.target.id === 'delete-contact') {
+      event.preventDefault();
+      let ok = confirm('Are you sure you want to delete?');
+      if (ok) {
+        API.deleteContact(event.target.closest('li').id).then(() => displayContacts(ul));
+      }
     }
   })
 
-  // Delete a contact
+  // Search form
+  let searchBox = document.querySelector('#searchBox');
+  searchBox.addEventListener('keyup', event => {
+    let input = searchBox.value;
+    let pattern = new RegExp("(" + input +")", "gi");
 
-  ul.addEventListener('click', event => {
-    if (event.target.tagName === 'A' && event.target.classList.contains('delete-contact')) {
-      event.preventDefault();
-      console.log('Delete button clicked');
-      // Display a confirmation model with ok and cancel
-      let ok = confirm('Are you sure you want to delete?');
+    API.getAllContacts().then(contacts => {
+      let filteredContacts = contacts.filter(contact => {
+        return contact.full_name.match(pattern);
+      });
 
-      // if ok clicked 
-      if (ok) {
-        // send delete request
-        let request = new XMLHttpRequest();
-        request.open('DELETE', event.target.href);
-
-        request.addEventListener('load', event => {
-          // if failed
-          if (request.status === 400) {
-            alert(`Failed: ${request.status}. Please try again!`);
-          }
-
-          // regardless of success or fail, re-render the contacts list
-          displayContacts(ul);
+      [...ul.children].forEach(child => child.remove());
+      if (filteredContacts.length === 0) {
+        // render no contacts with that name
+        console.log('no contact with that name')
+      } else {
+        filteredContacts.forEach(contact => {
+          renderContactList(ul, contact);
         })
-
-        request.send();
       }
+    });
+  });
 
+  // Empty search box
+  
+  searchBox.addEventListener('input', event => {
+    if (searchBox.value === '') {
+      displayContacts(ul);
     }
   })
 });
 
+const Form = {
+  createUI() {
+    let form = document.createElement('form');
+  },
+
+  init(contact) {
+    this.state = contact;
+    this.createUI();
+  }
+}
 
   // [x] Display the contacts
     // [x] make a request to get all contacts
