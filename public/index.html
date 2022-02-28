@@ -12,7 +12,7 @@
 <body>
   <header>
     <h1>Contact Manager App</h1>
-    <p>Using handlebars, jQuery</p>
+    <p>Using handlebars, jQuery and vanilla JS</p>
   </header>
 
   <div class="actionBar">
@@ -22,9 +22,23 @@
 
   <div id="contactForm"></div>
 
+  <script id="form" type="text/x-handlebars">
+    <form action="data-id="{{#if (contact id)}}{{id}}{{/if}}">
+      <label for="full_name">Full name:</label>
+      <input type="text" name="full_name" value="{{#if contact}}{{full_name}}{{else}}{{/if}}">
+      <label for="email">Email:</label>
+      <input type="email" name="email">
+      <label for="phone_number">Phone Number:</label>
+      <input type="tel" name="phone_number">
+      <input type="submit" id="addSubmitBtn">
+      <button id="cancelBtn">Cancel</button>
+    </form>
+  </script>
+
+
   <ul></ul>
 
     
-  <script src="script.js"></script>
+  <script type="module" src="/javascripts/app.js"></script>
 </body>
 </html>
