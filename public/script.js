@@ -103,20 +103,49 @@ function renderContactForm(div, contact) {
   div.appendChild(form);
 }
 
+const API = {
+  getAllContacts() {
+    return new Promise(function(resolve, reject) {
+      let request = new XMLHttpRequest();
+      request.open('GET', "http://localhost:3000/api/contacts");
+      request.responseType = 'json';
+    
+      request.addEventListener('load', event => {
+        if (request.status === 200) {
+          resolve(request.response);
+        } else {
+          reject({
+            status: request.status,
+            statusText: request.statusText,
+          });
+        }
+      });
+      request.send();
+    });
+    
+    // # Async / await way
+    // let contacts = await fetch("/api/contacts").then(res => res.json());
+    // return contacts;
+
+    // # XHR object way
+    // let request = new XMLHttpRequest();
+    // request.open('GET', "http://localhost:3000/api/contacts");
+    // request.responseType = 'json';
+  
+    // request.addEventListener('load', event => {
+    //   let contacts = request.response;
+    //   return contacts;
+    // });
+    // request.send();
+  },
+}
+
 const displayContacts = (ul) => {
   [...ul.children].forEach(child => child.remove());
-  let request = new XMLHttpRequest();
-  request.open('GET', "http://localhost:3000/api/contacts");
-  request.responseType = 'json';
 
-  request.addEventListener('load', event => {
-    let contacts = request.response; // an array of objects representing contacts
-    // iterate contacts, for each contact, render the contact as a list
-    contacts.forEach(contact => {
-      renderContactList(ul, contact);
-    });
-  });
-  request.send();
+  let contacts = API.getAllContacts().then(contacts => {
+    contacts.forEach(contact => renderContactList(ul, contact));
+  }); // How to handle the error. 
 };
 
 // maybe better to just delete
@@ -124,14 +153,7 @@ function hideContacts(ul) {
   ul.setAttribute('hidden', true);
 }
 
-//  maybe not necessary since we are deleting and re-rendering each time?
-function showContactsAndRemoveForm(ul, form) {
-  ul.removeAttribute('hidden');
-  form.remove();
-}
-
 function submitContactForm() {
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
