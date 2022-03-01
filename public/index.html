@@ -23,15 +23,23 @@
   <div id="contactForm"></div>
 
   <script id="form" type="text/x-handlebars">
-    <form action="data-id="{{#if (contact id)}}{{id}}{{/if}}">
-      <label for="full_name">Full name:</label>
-      <input type="text" name="full_name" value="{{#if contact}}{{full_name}}{{else}}{{/if}}">
-      <label for="email">Email:</label>
-      <input type="email" name="email">
-      <label for="phone_number">Phone Number:</label>
-      <input type="tel" name="phone_number">
-      <input type="submit" id="addSubmitBtn">
-      <button id="cancelBtn">Cancel</button>
+    <form action="" data-id="{{#if (isdefined id)}}{{id}}{{else}}{{/if}}">
+      <div class="form-name">
+        <label for="full_name">Full name:</label>
+        <input type="text" name="full_name" value="{{#if (isdefined full_name)}}{{full_name}}{{else}}{{/if}}">
+      </div>
+      <div class="form-email">
+        <label for="email">Email:</label>
+        <input type="email" name="email" value="{{#if (isdefined email)}}{{email}}{{else}}{{/if}}">
+      </div>
+      <div class="form-phonenumber">
+        <label for="phone_number">Phone Number:</label>
+        <input type="tel" name="phone_number" value="{{#if (isdefined phone_number)}}{{phone_number}}{{else}}{{/if}}">
+      </div>
+      <div class="form-buttons">
+        <input type="submit" id="submitBtn">
+        <button id="cancelBtn">Cancel</button>
+      </div>
     </form>
   </script>
 
