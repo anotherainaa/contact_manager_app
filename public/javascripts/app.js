@@ -2,7 +2,6 @@ import Model from "./model.js"
 // ============== API CALLS ============================
 
 const API = new Model();
-console.log(API);
 
 // ================== RENDERING STUFF ===================
 
@@ -54,61 +53,14 @@ function renderContactList(contactsList, contact) {
   contactsList.appendChild(li);
 };
 
-function renderContactForm(div, contact) {
-  let form = document.createElement('form');
-  form.id = contact ? contact.id : '';
+function renderContactForm(div, contact = undefined) {
+  let formTemplate = Handlebars.compile(document.getElementById('form').innerHTML);
 
-  let nameLabel = document.createElement('label');
-  let nameLabelText = document.createTextNode('Full name:');
-  nameLabel.setAttribute('for', 'full_name');
-  nameLabel.appendChild(nameLabelText);
-  
-  let nameInput = document.createElement('input');
-  nameInput.setAttribute('type', 'text');
-  nameInput.setAttribute('name', 'full_name');
-  nameInput.value = contact ? contact.full_name : '';
-  
-  let emailLabel = document.createElement('label');
-  let emailLabelText = document.createTextNode('Email:');
-  emailLabel.setAttribute('for', 'email');
-  emailLabel.appendChild(emailLabelText);
-  
-  let emailInput = document.createElement('input');
-  emailInput.setAttribute('type', 'email');
-  emailInput.setAttribute('name', 'email');
-  emailInput.value = contact ? contact.email : '';
+  Handlebars.registerHelper('isdefined', value => {
+    return value !== undefined;
+  });
 
-  let phoneNumberLabel = document.createElement('label');
-  let phoneNumberLabelText = document.createTextNode('Phone Number:');
-  phoneNumberLabel.setAttribute('for', 'phone_number');
-  phoneNumberLabel.appendChild(phoneNumberLabelText);
-  
-  let phoneNumberInput = document.createElement('input');
-  phoneNumberInput.setAttribute('type', 'tel');
-  phoneNumberInput.setAttribute('name', 'phone_number');
-  phoneNumberInput.value = contact ? contact.phone_number : '';
-
-  let submitButton = document.createElement('input');
-  submitButton.setAttribute('type', 'submit');
-  submitButton.id = contact ? 'editSubmitBtn'  : 'addSubmitBtn';
-
-  let cancelButton = document.createElement('button');
-  cancelButton.id = 'cancelBtn';
-  cancelButton.textContent = 'Cancel';
-
-  form.appendChild(nameLabel);
-  form.appendChild(nameInput);
-  
-  form.appendChild(emailLabel);
-  form.appendChild(emailInput);
-
-  form.appendChild(phoneNumberLabel);
-  form.appendChild(phoneNumberInput);
-
-  form.appendChild(submitButton);
-  form.appendChild(cancelButton);
-
-  div.appendChild(form);
+  $('body').append(formTemplate(contact));
 }
 
 // ========== RENDERING UI ==================
@@ -125,6 +77,7 @@ function hideContacts(ul) {
 
 // ========== HELPER FUNCTIONS : DATA SERIALIZER =================
 
+
 function formDatatoJson(formData) {
   let json = {};
 
@@ -133,6 +86,12 @@ function formDatatoJson(formData) {
   }
   return json;
 }
+
+// ============== HANDLEBARS =============================
+
+Handlebars.registerHelper('isdefined', value => {
+  return value !== undefined;
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   // Display the contacts
@@ -182,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (button.id === 'addSubmitBtn') {
       API.addContact(json).catch(error => alert(`${error.status} ${error.statusText}`)); 
     } else if (button.id === 'editSubmitBtn') {
-      let contactID = form.id;
+      let contactID = form.getAttribute('data-id');
       API.editContact(contactID, json).catch(error => alert(`${error.status} ${error.statusText}`));
     }
 
@@ -232,113 +191,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })
 });
-
-class Form {
-  constructor(contact = undefined) {
-    this.container = document.querySelector('contactForm');
-    this.createUI(container, contact);
-    this.bindEvents();
-  }
-
-  createUI(container, contact) {
-    let form = document.createElement('form');
-    form.id = contact ? contact.id : '';
-
-    let nameLabel = document.createElement('label');
-    let nameLabelText = document.createTextNode('Full name:');
-    nameLabel.setAttribute('for', 'full_name');
-    nameLabel.appendChild(nameLabelText);
-    
-    let nameInput = document.createElement('input');
-    nameInput.setAttribute('type', 'text');
-    nameInput.setAttribute('name', 'full_name');
-    nameInput.value = contact ? contact.full_name : '';
-    
-    let emailLabel = document.createElement('label');
-    let emailLabelText = document.createTextNode('Email:');
-    emailLabel.setAttribute('for', 'email');
-    emailLabel.appendChild(emailLabelText);
-    
-    let emailInput = document.createElement('input');
-    emailInput.setAttribute('type', 'email');
-    emailInput.setAttribute('name', 'email');
-    emailInput.value = contact ? contact.email : '';
-
-    let phoneNumberLabel = document.createElement('label');
-    let phoneNumberLabelText = document.createTextNode('Phone Number:');
-    phoneNumberLabel.setAttribute('for', 'phone_number');
-    phoneNumberLabel.appendChild(phoneNumberLabelText);
-    
-    let phoneNumberInput = document.createElement('input');
-    phoneNumberInput.setAttribute('type', 'tel');
-    phoneNumberInput.setAttribute('name', 'phone_number');
-    phoneNumberInput.value = contact ? contact.phone_number : '';
-
-    let submitButton = document.createElement('input');
-    submitButton.setAttribute('type', 'submit');
-    submitButton.id = contact ? 'editSubmitBtn'  : 'addSubmitBtn';
-
-    let cancelButton = document.createElement('button');
-    cancelButton.id = 'cancelBtn';
-    cancelButton.textContent = 'Cancel';
-
-    form.appendChild(nameLabel);
-    form.appendChild(nameInput);
-    
-    form.appendChild(emailLabel);
-    form.appendChild(emailInput);
-
-    form.appendChild(phoneNumberLabel);
-    form.appendChild(phoneNumberInput);
-
-    form.appendChild(submitButton);
-    form.appendChild(cancelButton);
-
-    container.appendChild(form);
-  }
-
-  bindEvents() {
-    this.form.addEventListener('submit', event => {
-      console.log('Form submitted');
-    });
-  }
-}
-
-  // [x] Display the contacts
-    // [x] make a request to get all contacts
-    // [x] iterate through contacts, for each contact render the form. 
-
-// Save a new contact
-  // display the form
-    // when user clicks on add contact, hide the contacts lists ul
-    // render the form
-  // when the user submits on the form
-    // display validation errors if any
-    // display the full contacts list ul again
-
-// Edit a contact
-  // when edit button is clicked
-  // display the form with selected contact data
-    // get the individual contact data
-    // render the form with the contact data
-  // if submit button clicked, 
-    // make a put request 
-    // send the new data serialized as json
-    // display updated contact list
-
-// Delete a contact
-  // when delete button is clicked
-  // display a confirmation modal 
-  // if ok clicked, send delete request
-    // if error, display error
-    // re-render contacts
-
-// Search for a contact
-  // as soon as a value is input
-  // for each time a key is input or deleted
-  // if the search box is empty
-    // re-render with all contacts 
-  // else 
-    // send a request to find contacts with the letter 
-      // if contacts are empty, display "There is no contacts starting with ss"
-      // else if contacts are not empty, re-render the ul with the results
