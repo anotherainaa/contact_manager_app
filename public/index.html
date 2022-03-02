@@ -20,7 +20,9 @@
     <input id="searchBox" type="search" placeholder="search">
   </div>
 
-  <div class="root"></div>
+  <ul id="contactsList"></ul>
+
+  <div id="contactForm"></div>
 
   <script id="form" type="text/x-handlebars">
     <form action="" data-id="{{#if (isdefined id)}}{{id}}{{else}}{{/if}}">
@@ -84,14 +86,6 @@
   <script id="tag" type="text/x-handlebars">
     <strong>{{this}}</strong>
   </script>
-
-  <script id="contactsNotFound" type="text/x-handlebars">
-    <h3>We couldn't find any contacts using your search input!</h3>
-  </script>
-    
-  <ul id="contactsList"></ul>
-
-  <div id="contactForm"></div>
 
   <script type="module" src="/javascripts/app.js"></script>
 </body>

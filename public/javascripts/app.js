@@ -4,7 +4,7 @@ import { ContactListView, SearchBarView, FormView, ButtonView } from "./view.js"
 // ============== Model and View instantiation ==========
 
 const API = new Model();
-const searchView = new SearchBarView();
+const searchBarView = new SearchBarView();
 const contactListView = new ContactListView();
 const formView = new FormView();
 const buttonView = new ButtonView();
@@ -15,17 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 
-// ================== controller ===============================
-
-const displayContacts = () => {
+const displayContacts = function() {
   API.getAllContacts().then(function(contacts) {
+    console.log(contacts);
     contactListView.render(contacts);
-  });
+  }).catch(error => formView.renderServerError(error));
 };
 
 const handleSearch = function() {
   // get search query
-  const input = searchView.getInput();
+  const input = searchBarView.getInput();
   const pattern = new RegExp("(" + input +")", "gi");
 
   if (!input) {
@@ -38,13 +37,12 @@ const handleSearch = function() {
       });
 
       if (filteredContacts.length === 0) {
-        // render no contacts with that name
-        contactListView.renderNotFound();
+        // contactListView.renderNotFound();
+        contactListView.renderError(`We couldn't find any contacts or tags matching ${input}`);
       } else {
-        // renderContacts(filteredContacts);
         contactListView.render(filteredContacts);
       }
-    });
+    }).catch(error => formView.renderServerError(error));
   }
 }
 
@@ -68,12 +66,12 @@ const handleSubmitContact = function(buttonId, contactID) {
   response.then(() => {
     displayContacts();
     formView.clear();
-  }).catch(error => formView.renderErrorMessage(error));
+  }).catch(error => formView.renderServerError(error));
 }; 
 
 const handleAddContactForm = function() {
   contactListView.clear();
-  formView.render();
+  formView.render('');
 }
 
 const handleEditContactForm = function(contactID) {
@@ -81,7 +79,7 @@ const handleEditContactForm = function(contactID) {
   
   API.getContact(contactID).then((contact) => {
     formView.render(contact);
-  });
+  }).catch(error => formView.renderError());
 } 
 
 const handleCancelForm = function() {
@@ -93,7 +91,7 @@ const handleDeleteContact = function(ok, contactID) {
   if (ok) {
     API.deleteContact(contactID).then(() => {
       displayContacts();
-    }).catch(error => formView.renderErrorMessage(error));
+    }).catch(error => formView.renderServerError(error));
 
   }
 }
@@ -101,22 +99,20 @@ const handleDeleteContact = function(ok, contactID) {
 
 // ============ Search bar query helper function ================
 
-function matchingName(contact, regex) {
+const matchingName = function(contact, regex) {
   return contact.full_name.match(regex);
 }
 
-function matchingTag(contact, regex) {
+const matchingTag = function(contact, regex) {
   return (contact.tags ? contact.tags.some(contact => contact.match(regex)) : false);
 }
-
-// =========== Controller Init and Binding Event Handlers ========================
 
 const init = function() {
   // display contacts
   displayContacts();
   
   // binding events
-  searchView.addHandlerSearch(handleSearch);
+  searchBarView.addHandlerSearch(handleSearch);
   formView.addHandlerForm(handleSubmitContact);
 
   // bind button events
@@ -125,5 +121,3 @@ const init = function() {
   buttonView.bindEditContactButton(handleEditContactForm);
   buttonView.bindDeleteContactButton(handleDeleteContact);
 }
-
-

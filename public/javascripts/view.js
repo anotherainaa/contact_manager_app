@@ -1,3 +1,36 @@
+class View {
+  render(data) {
+    if (Array.isArray(data) && data.length === 0) {
+      this.renderError();
+      return;
+    }
+
+    console.log(data);
+    this.data = data;
+    const markup = this._generateMarkup();
+    this.clear();
+    this.parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+
+  clear() {
+    this.parentElement.innerHTML = '';
+  }
+
+  renderServerError(error) {
+    alert(`${error.status} ${error.statusText}`);
+  }
+
+  renderError(message = this._errorMessage) {
+    const markup = `
+      <div class="error">
+        <p>${message}</p>
+      </div>
+    `
+    this.clear();
+    this.parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+}
+
 export class SearchBarView {
   constructor() {
     this.parentElement = document.querySelector('.actionBar');
@@ -20,16 +53,23 @@ export class SearchBarView {
 }
 
 
-export class ContactListView {
+export class ContactListView extends View {
   constructor() {
+    super()
     this.parentElement = document.querySelector('#contactsList');
-    this.generateTemplate();
+    this._errorMessage = `There are no contacts!`
   }
 
-  render(data) {
-    this.clear();
-    this.parentElement.insertAdjacentHTML("beforeend", this.contactsTemplate( { contacts: data }))
-  }
+  // render(data) {
+  //   this.data = data;
+  //   const markup = this._generateMarkup();
+  //   this.clear();
+  //   this.parentElement.insertAdjacentHTML('afterbegin', markup);
+  // }
+
+  // clear() {
+  //   this.parentElement.innerHTML = '';
+  // }
 
   renderNotFound() {
     this.clear();
@@ -37,31 +77,30 @@ export class ContactListView {
     this.parentElement.insertAdjacentHTML("beforeend", contactsNotFoundTemplate());
   }
 
-  clear() {
-    this.parentElement.innerHTML = '';
-  }
-
-  generateTemplate() {
+  _generateMarkup() {
     Handlebars.registerPartial('tag', document.getElementById('tag').innerHTML);
     this.contactsTemplate = Handlebars.compile(document.getElementById('contacts').innerHTML);
+    return this.contactsTemplate({ contacts : this.data });
   }
 }
 
-export class FormView {
+export class FormView extends View {
   constructor() {
+    super()
     this.parentElement = document.querySelector('#contactForm');
-    this.generateTemplate();
+    this._errorMessage = `Something went wrong while trying to get your contact. Please try again!`
   }
 
-  render(data) {
-    this.clear();
-    if (data) {
-      const contact = data;
-      this.parentElement.insertAdjacentHTML("beforeend", this.formTemplate(contact));
-    } else {
-      this.parentElement.insertAdjacentHTML("beforeend", this.formTemplate());
-    }
-  }
+  // render(data) {
+  //   this.data = data;
+  //   const markup = this._generateMarkup();
+  //   this.clear();
+  //   this.parentElement.insertAdjacentHTML('afterbegin', markup);
+  // }
+
+  // clear() {
+  //   this.parentElement.innerHTML = '';
+  // }
 
   renderErrorMessage(error) {
     alert(`${error.status} ${error.statusText}`);
@@ -87,10 +126,6 @@ export class FormView {
     return json;
   }
 
-  clear() {
-    this.parentElement.innerHTML = '';
-  }
-
   addHandlerForm(handler) {
     this.parentElement.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -100,14 +135,20 @@ export class FormView {
     });
   }
 
-  generateTemplate() {
+  _generateMarkup() {
     Handlebars.registerHelper('isdefined', value => {
       return value !== undefined;
     });
 
     this.formTemplate = Handlebars.compile(document.getElementById('form').innerHTML);
-  }
 
+    if (this.data) {
+      const contact = data;
+      return this.formTemplate(contact);
+    } else {
+      return this.formTemplate();
+    }
+  }
 }
 
 export class ButtonView {
