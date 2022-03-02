@@ -20,7 +20,7 @@
     <input id="searchBox" type="search" placeholder="search">
   </div>
 
-  <div id="contactForm"></div>
+  <div class="root"></div>
 
   <script id="form" type="text/x-handlebars">
     <form action="" data-id="{{#if (isdefined id)}}{{id}}{{else}}{{/if}}">
@@ -36,17 +36,63 @@
         <label for="phone_number">Phone Number:</label>
         <input type="tel" name="phone_number" value="{{#if (isdefined phone_number)}}{{phone_number}}{{else}}{{/if}}">
       </div>
+      <div class="form-tags">
+        <label for="tags">Tags:</label>
+        <input type="text" name="tags" value="{{#if (isdefined tags)}}{{tags}}{{else}}{{/if}}">
+      </div>
       <div class="form-buttons">
-        <input type="submit" id="submitBtn">
+        <input type="submit" id="{{#if (isdefined id)}}editSubmitBtn{{else}}addSubmitBtn{{/if}}">
         <button id="cancelBtn">Cancel</button>
       </div>
     </form>
   </script>
 
+  <script id="contacts" type="text/x-handlebars">
+    {{#each contacts}}
+      <li data-id={{id}}>
+        <div class="contact-name">
+          <h3>{{full_name}}</h3>
+        </div>
+        <div class="contact-details">
+          <dl>
+            <dt>Email:</dt>
+            <dd>{{email}}</dd>
+            <dt>Phone Number</dt>
+            <dd>{{phone_number}}</dd>
+          </dl>
+        </div>
+        <div class=contact-tags>
+          <p>
+            {{#if tags}}
+            Tags:
+            {{#each tags}}
+            {{>tag}}
+            {{/each}}
+            {{else}}
+            Not tagged
+            {{/if}}
+          </p>
+        </div>
+        <div class="contact-action-btn">
+          <button id='editBtn'>Edit</button>
+          <button id='deleteBtn'>Delete</button>
+        </div>
+      </li>
+    {{/each}}
+  </script>
 
-  <ul></ul>
+  <script id="tag" type="text/x-handlebars">
+    <strong>{{this}}</strong>
+  </script>
 
+  <script id="contactsNotFound" type="text/x-handlebars">
+    <h3>We couldn't find any contacts using your search input!</h3>
+  </script>
     
+  <ul id="contactsList"></ul>
+
+  <div id="contactForm"></div>
+
   <script type="module" src="/javascripts/app.js"></script>
 </body>
 </html>

@@ -3,7 +3,12 @@ class Model {
     this.contacts;
   }
 
+  convertTagsIntoArray(contact) {
+    contact.tags = contact.tags ? contact.tags.split(',') : contact.tags;
+  }
+
   getAllContacts() {
+    let self = this;
     return new Promise(function(resolve, reject) {
       let request = new XMLHttpRequest();
       request.open('GET', "http://localhost:3000/api/contacts");
@@ -11,7 +16,11 @@ class Model {
     
       request.addEventListener('load', event => {
         if (request.status === 200) {
-          resolve(request.response);
+          let contacts = request.response;
+          contacts.forEach(contact => {
+            self.convertTagsIntoArray(contact);
+          });
+          resolve(contacts);
         } else {
           reject({
             status: request.status,

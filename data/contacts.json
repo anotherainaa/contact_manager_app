@@ -21,45 +21,31 @@
     "id": 3
   },
   {
-    "full_name": "Ainaa Saa",
-    "phone_number": "1232134",
-    "email": "atestes@akfjaldsd",
-    "tags": null,
+    "full_name": "BMO 231",
+    "phone_number": "12313213",
+    "email": "bmo@adventure.time",
+    "tags": "friend, work",
     "id": 4
   },
   {
-    "full_name": "Helo 231",
-    "phone_number": "123134324",
-    "email": "helo@ruby.com",
-    "tags": null,
-    "id": 5
-  },
-  {
-    "full_name": "asdasd",
-    "phone_number": "213213123",
-    "email": "sadas@ajhsdskjf",
-    "tags": null,
+    "full_name": "Jake A",
+    "phone_number": "3214567789",
+    "email": "Jake@adventure.time",
+    "tags": "adventure",
     "id": 6
   },
   {
-    "full_name": "marce",
+    "full_name": "Marceline",
     "phone_number": "21314324",
-    "email": "marice@sdjfhsf",
-    "tags": null,
+    "email": "marice@adventure.time",
+    "tags": "adventure",
     "id": 9
   },
   {
     "full_name": "Finn",
     "phone_number": "1231445646",
     "email": "finn@adventure.time",
-    "tags": null,
+    "tags": "adventure",
     "id": 10
-  },
-  {
-    "full_name": "DadaASDASDASD",
-    "phone_number": "3245453543",
-    "email": "dada@gmail.com",
-    "tags": null,
-    "id": 11
   }
 ]

@@ -1,193 +1,129 @@
 import Model from "./model.js"
-// ============== API CALLS ============================
+import { ContactListView, SearchBarView, FormView, ButtonView } from "./view.js";
+
+// ============== Model and View instantiation ==========
 
 const API = new Model();
+const searchView = new SearchBarView();
+const contactListView = new ContactListView();
+const formView = new FormView();
+const buttonView = new ButtonView();
 
-// ================== RENDERING STUFF ===================
-
-function renderContactList(contactsList, contact) {
-  let li = document.createElement('li');
-  li.id = contact.id;
-
-  let h3 = document.createElement('h3');
-  let nameH3 = document.createTextNode(contact.full_name);
-  h3.appendChild(nameH3);
-  li.appendChild(h3);
-
-  let detailsDL = document.createElement('dl');
-
-  let phoneNumberDt = document.createElement('dt');
-  let phoneNumberDtText = document.createTextNode('Phone Number:');
-  phoneNumberDt.appendChild(phoneNumberDtText);
-
-  let phoneNumberDd = document.createElement('dd');
-  let phoneNumberDdText = document.createTextNode(contact.phone_number);
-  phoneNumberDd.appendChild(phoneNumberDdText);
-
-  let emailDt = document.createElement('dt');
-  let emailDtText = document.createTextNode('Email:');
-  emailDt.appendChild(emailDtText);
-
-  let emailDd = document.createElement('dd');
-  let emailDdText = document.createTextNode(contact.email); 
-  emailDd.appendChild(emailDdText);
-
-  detailsDL.appendChild(phoneNumberDt);
-  detailsDL.appendChild(phoneNumberDd);
-  detailsDL.appendChild(emailDt);
-  detailsDL.appendChild(emailDd);
-  li.appendChild(detailsDL);
-
-  let editButton = document.createElement('button');
-  editButton.textContent = 'Edit';
-  editButton.id = 'edit-contact';
-  editButton.classList.add('btn');
-  li.appendChild(editButton);
-
-  let deleteButton = document.createElement('button');
-  deleteButton.textContent = 'Delete';
-  deleteButton.id = 'delete-contact';
-  deleteButton.classList.add('btn');
-  li.appendChild(deleteButton);
-
-  contactsList.appendChild(li);
-};
-
-function renderContactForm(div, contact = undefined) {
-  let formTemplate = Handlebars.compile(document.getElementById('form').innerHTML);
-
-  Handlebars.registerHelper('isdefined', value => {
-    return value !== undefined;
-  });
-
-  $('body').append(formTemplate(contact));
-}
-
-// ========== RENDERING UI ==================
-
-const displayContacts = (ul) => {
-  [...ul.children].forEach(child => child.remove());
-  API.getAllContacts().then(contacts => contacts.forEach(contact => renderContactList(ul, contact))); 
-  // Learn how to handle promise error
-};
-
-function hideContacts(ul) {
-  ul.setAttribute('hidden', true);
-}
-
-// ========== HELPER FUNCTIONS : DATA SERIALIZER =================
-
-
-function formDatatoJson(formData) {
-  let json = {};
-
-  for (const pair of formData.entries()) {
-    json[pair[0]] = pair[1];
-  }
-  return json;
-}
-
-// ============== HANDLEBARS =============================
-
-Handlebars.registerHelper('isdefined', value => {
-  return value !== undefined;
-});
+// ================ The app ==========================
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Display the contacts
-  let ul = document.querySelector('ul');
-  displayContacts(ul);
+  init();
+});
 
-  // Add a contact vs edit a contact - Rendering the form
-  let formDiv = document.getElementById('contactForm');
-  document.addEventListener('click', event => {
-    if (event.target.id === 'addBtn') {
-      event.preventDefault();
-      hideContacts(ul);
-      if (!formDiv.contains(document.querySelector('form'))) {
-        renderContactForm(formDiv);
-      }
-    } else if (event.target.id === 'edit-contact') {
-      event.preventDefault();
-      hideContacts(ul);
+// ================== controller ===============================
 
-      let contactID = event.target.closest('li').id;
-      API.getContact(contactID).then((contact) => {
-        if (!formDiv.contains(document.querySelector('form'))) {
-          renderContactForm(formDiv, contact);
-        }
-      });
-    }
+const displayContacts = () => {
+  API.getAllContacts().then(function(contacts) {
+    contactListView.render(contacts);
   });
+};
 
-    // listen for form cancel button, display display contact list - delegate to body
-    document.addEventListener('click', event => {
-      if (event.target.id === 'cancelBtn') {
-        console.log('Cancel button clicked');
-        event.preventDefault();
-        ul.removeAttribute('hidden');
-        document.querySelector('form').remove();
-      }
-    })
+const handleSearch = function() {
+  // get search query
+  const input = searchView.getInput();
+  const pattern = new RegExp("(" + input +")", "gi");
 
-  // listen for submit form - delegate event
-  document.addEventListener('submit', event => {
-    event.preventDefault();
-    let form = event.target;
-    let button = event.target.querySelector('[type="submit"]');
-    let data = new FormData(form);
-    let json = JSON.stringify(formDatatoJson(data));
-
-    if (button.id === 'addSubmitBtn') {
-      API.addContact(json).catch(error => alert(`${error.status} ${error.statusText}`)); 
-    } else if (button.id === 'editSubmitBtn') {
-      let contactID = form.getAttribute('data-id');
-      API.editContact(contactID, json).catch(error => alert(`${error.status} ${error.statusText}`));
-    }
-
-    displayContacts(ul);
-    ul.removeAttribute('hidden');
-    form.remove();
-  })
-
-  // Delete a contact - delegate event to document
-  document.addEventListener('click', event => {
-    if (event.target.id === 'delete-contact') {
-      event.preventDefault();
-      let ok = confirm('Are you sure you want to delete?');
-      if (ok) {
-        API.deleteContact(event.target.closest('li').id).then(() => displayContacts(ul));
-      }
-    }
-  })
-
-  // Search form
-  let searchBox = document.querySelector('#searchBox');
-  searchBox.addEventListener('keyup', event => {
-    let input = searchBox.value;
-    let pattern = new RegExp("(" + input +")", "gi");
-
+  if (!input) {
+    displayContacts(); 
+    return;
+  } else {
     API.getAllContacts().then(contacts => {
       let filteredContacts = contacts.filter(contact => {
-        return contact.full_name.match(pattern);
+        return matchingName(contact, pattern) || matchingTag(contact, pattern);
       });
 
-      [...ul.children].forEach(child => child.remove());
       if (filteredContacts.length === 0) {
         // render no contacts with that name
-        console.log('no contact with that name')
+        contactListView.renderNotFound();
       } else {
-        filteredContacts.forEach(contact => {
-          renderContactList(ul, contact);
-        })
+        // renderContacts(filteredContacts);
+        contactListView.render(filteredContacts);
       }
     });
-  });
+  }
+}
 
-  // Empty search box
-  searchBox.addEventListener('input', event => {
-    if (searchBox.value === '') {
-      displayContacts(ul);
-    }
-  })
-});
+// ============== form helper function
+
+const handleSubmitContact = function(buttonId, contactID) {
+  // get data 
+  const json = formView.getInputInJSON();
+
+  // call the right api
+  let response;
+  if (buttonId === 'addSubmitBtn') {
+    response = API.addContact(json);
+    // do form validation
+  } else if (buttonId === 'editSubmitBtn') {
+    response = API.editContact(contactID, json);
+    // do form validation
+  }
+
+   // render success or catch errors
+  response.then(() => {
+    displayContacts();
+    formView.clear();
+  }).catch(error => formView.renderErrorMessage(error));
+}; 
+
+const handleAddContactForm = function() {
+  contactListView.clear();
+  formView.render();
+}
+
+const handleEditContactForm = function(contactID) {
+  contactListView.clear();
+  
+  API.getContact(contactID).then((contact) => {
+    formView.render(contact);
+  });
+} 
+
+const handleCancelForm = function() {
+  displayContacts();
+  formView.clear();
+}
+
+const handleDeleteContact = function(ok, contactID) {
+  if (ok) {
+    API.deleteContact(contactID).then(() => {
+      displayContacts();
+    }).catch(error => formView.renderErrorMessage(error));
+
+  }
+}
+
+
+// ============ Search bar query helper function ================
+
+function matchingName(contact, regex) {
+  return contact.full_name.match(regex);
+}
+
+function matchingTag(contact, regex) {
+  return (contact.tags ? contact.tags.some(contact => contact.match(regex)) : false);
+}
+
+// =========== Controller Init and Binding Event Handlers ========================
+
+const init = function() {
+  // display contacts
+  displayContacts();
+  
+  // binding events
+  searchView.addHandlerSearch(handleSearch);
+  formView.addHandlerForm(handleSubmitContact);
+
+  // bind button events
+  buttonView.bindButton('addBtn', handleAddContactForm);
+  buttonView.bindButton('cancelBtn', handleCancelForm);
+  buttonView.bindEditContactButton(handleEditContactForm);
+  buttonView.bindDeleteContactButton(handleDeleteContact);
+}
+
+
