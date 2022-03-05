@@ -76,37 +76,10 @@ class FormView extends View {
   }
 
   resetForm() {
-    this.validationTexts.forEach(text => text.classList.remove('hide'));
-    this.inputs.forEach(input => input.classList.add('has-error'));
+    this.validationTexts.forEach(text => text.classList.add('hide'));
+    this.inputs.forEach(input => input.classList.remove('has-error'));
     this.validForm = false;
   }
-
-  // allValuesValid() {
-  //   const inputs = [...this.parentElement.querySelectorAll('.form-input')].slice(0, 3);
-  //   const validationTexts = this.parentElement.querySelectorAll('.validation-text');
-
-  //   let validations = inputs.map(input => {
-  //     if (input.name === "full_name") {
-  //       return this.validName(input.value);
-  //     } else if (input.name === 'phone_number') {
-  //       return this.validPhone(input.value);
-  //     } else if (input.name === 'email') {
-  //       return this.validEmail(input.value); 
-  //     }
-  //   })
-    
-  //   validations.forEach((valid, index) => {
-  //     if (valid) {
-  //       validationTexts[index].classList.add('hide');
-  //       inputs[index].classList.remove('has-error');
-  //     } else {
-  //       validationTexts[index].classList.remove('hide');
-  //       inputs[index].classList.add('has-error');
-  //     }
-  //   })
-
-  //   return validations.every(validation => validation);
-  // }
 
   formDatatoJson(formData) {
     const json = {};
