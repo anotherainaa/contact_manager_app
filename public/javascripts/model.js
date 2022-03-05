@@ -1,8 +1,4 @@
 class Model {
-  constructor() {
-    this.contacts;
-  }
-
   convertTagsIntoArray(contact) {
     contact.tags = contact.tags ? contact.tags.split(',') : contact.tags;
   }
