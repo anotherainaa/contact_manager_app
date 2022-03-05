@@ -7,7 +7,7 @@ class Model {
     let self = this;
     return new Promise(function(resolve, reject) {
       let request = new XMLHttpRequest();
-      request.open('GET', "http://localhost:3000/api/contacts");
+      request.open('GET', "/api/contacts");
       request.responseType = 'json';
     
       request.addEventListener('load', event => {
