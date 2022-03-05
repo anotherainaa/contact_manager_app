@@ -16,19 +16,19 @@
   {
     "full_name": "Pete Hanson",
     "phone_number": "1233243254",
-    "email": "pete@exampl.com",
-    "tags": null,
+    "email": "pete@example.com",
+    "tags": "",
     "id": 3
   },
   {
-    "full_name": "BMO 231",
+    "full_name": "BMO ",
     "phone_number": "12313213",
     "email": "bmo@adventure.time",
     "tags": "friend, work",
     "id": 4
   },
   {
-    "full_name": "Jake A",
+    "full_name": "Jake",
     "phone_number": "3214567789",
     "email": "Jake@adventure.time",
     "tags": "adventure",
@@ -37,7 +37,7 @@
   {
     "full_name": "Marceline",
     "phone_number": "21314324",
-    "email": "marice@adventure.time",
+    "email": "marcie@adventure.time",
     "tags": "adventure",
     "id": 9
   },
@@ -47,5 +47,19 @@
     "email": "finn@adventure.time",
     "tags": "adventure",
     "id": 10
+  },
+  {
+    "full_name": "PB Princess 2",
+    "phone_number": "111-222-333",
+    "email": "pb@adventure.time",
+    "tags": "adventure",
+    "id": 11
+  },
+  {
+    "full_name": "Flame Princess FP",
+    "phone_number": "444-555-666",
+    "email": "fp@adventure.time",
+    "tags": "adventure",
+    "id": 12
   }
 ]

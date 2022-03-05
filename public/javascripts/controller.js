@@ -1,84 +1,102 @@
-const displayContacts = () => {
-  API.getAllContacts().then(function(contacts) {
+import model from "./model.js"
+import contactListView from './views/contactListView.js';
+import formView from './views/formView.js';
+import actionBarView from './views/actionBarView.js';
+import headerView from './views/headerView.js';
+
+// ================ Controller ================
+
+const displayAllContacts = function() {
+  model.getAllContacts().then(function(contacts) {
     contactListView.render(contacts);
-  });
+  }).catch(error => formView.renderServerError(error));
 };
 
-const handleSearch = function() {
-  // get search query
-  const input = searchBarView.getInput();
+const displaySearchResults = function(input) {
   const pattern = new RegExp("(" + input +")", "gi");
 
+  model.getAllContacts().then(contacts => {
+    const filteredContacts = contacts.filter(contact => {
+      return matchingName(contact, pattern) || matchingTag(contact, pattern);
+    });
+
+    if (filteredContacts.length === 0) {
+      contactListView.renderError(`Couldn't find any contacts or tags matching ${input}`);
+    } else {
+      contactListView.render(filteredContacts);
+    }
+  }).catch(error => formView.renderServerError(error));
+}
+
+const handleSearchBarInput = function() {
+  const input = actionBarView.getInput();
+
   if (!input) {
-    displayContacts(); 
+    displayAllContacts(); 
     return;
   } else {
-    API.getAllContacts().then(contacts => {
-      let filteredContacts = contacts.filter(contact => {
-        return matchingName(contact, pattern) || matchingTag(contact, pattern);
-      });
-
-      if (filteredContacts.length === 0) {
-        contactListView.renderNotFound();
-      } else {
-        contactListView.render(filteredContacts);
-      }
-    });
+    displaySearchResults(input);
   }
 }
 
-// ============== form helper function
-
-const handleSubmitContact = function(buttonId, contactID) {
-  // get data 
+const handleAddNewContact = function() {
   const json = formView.getInputInJSON();
 
-  // call the right api
-  let response;
-  if (buttonId === 'addSubmitBtn') {
-    response = API.addContact(json);
-    // do form validation
-  } else if (buttonId === 'editSubmitBtn') {
-    response = API.editContact(contactID, json);
-    // do form validation
-  }
-
-   // render success or catch errors
-  response.then(() => {
-    displayContacts();
-    formView.clear();
-  }).catch(error => formView.renderErrorMessage(error));
-}; 
-
-const handleAddContactForm = function() {
-  contactListView.clear();
-  formView.render();
+  model.addContact(json).then(() => {
+    showHomeView();
+  }).catch(error => formView.renderServerError(error));
 }
 
-const handleEditContactForm = function(contactID) {
+const handleEditExistingContact = function(contactID) {
+  const json = formView.getInputInJSON();
+
+  model.editContact(contactID, json).then(() => {
+    showHomeView();;
+  }).catch(error => formView.renderServerError(error));
+}
+
+const handleSubmitContactForm = function(contactID) {
+  if (contactID) {
+    handleEditExistingContact(contactID);
+  } else {
+    handleAddNewContact();
+  }
+}
+
+const displayAddContactForm = function() {
   contactListView.clear();
+  actionBarView.hide();
+  formView.render('');
+}
+
+const displayEditContactForm = function(contactID) {
+  contactListView.clear();
+  actionBarView.hide();
   
-  API.getContact(contactID).then((contact) => {
+  model.getContact(contactID).then((contact) => {
     formView.render(contact);
+  }).catch(error => {
+    formView.renderServerError(error);
   });
 } 
 
-const handleCancelForm = function() {
-  displayContacts();
-  formView.clear();
-}
-
 const handleDeleteContact = function(ok, contactID) {
   if (ok) {
-    API.deleteContact(contactID).then(() => {
-      displayContacts();
-    }).catch(error => formView.renderErrorMessage(error));
-
+    model.deleteContact(contactID).then(() => {
+      showHomeView();
+    }).catch(error => formView.renderServerError(error));
   }
 }
 
+const handleCancelForm = function() {
+  showHomeView();
+}
 
-// ============ Search bar query helper function ================
+const showHomeView = function() {
+  displayAllContacts();
+  actionBarView.show();
+  formView.clear();
+}
 
 const matchingName = function(contact, regex) {
   return contact.full_name.match(regex);
@@ -89,16 +107,22 @@ const matchingTag = function(contact, regex) {
 }
 
 const init = function() {
-  // display contacts
-  displayContacts();
+  showHomeView();
   
   // binding events
-  searchBarView.addHandlerSearch(handleSearch);
-  formView.addHandlerForm(handleSubmitContact);
+  actionBarView.bindSearchInput(handleSearchBarInput);
+  actionBarView.bindAddContactButton(displayAddContactForm);
+  
+  formView.bindSubmitButton(handleSubmitContactForm);
+  formView.bindCancelButton(handleCancelForm);
+  formView.bindEditContactButton(displayEditContactForm);
+  formView.bindDeleteContactButton(handleDeleteContact);
 
-  // bind button events
-  buttonView.bindButton('addBtn', handleAddContactForm);
-  buttonView.bindButton('cancelBtn', handleCancelForm);
-  buttonView.bindEditContactButton(handleEditContactForm);
-  buttonView.bindDeleteContactButton(handleDeleteContact);
+  headerView.bindHeaderClick(showHomeView);
 }
+
+// ========== initialize app ============
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+});

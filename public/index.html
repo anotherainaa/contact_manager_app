@@ -11,13 +11,15 @@
 </head>
 <body>
   <header>
-    <h1>Contact Manager App</h1>
-    <p>Using handlebars, jQuery and vanilla JS</p>
+    <div class="container">
+      <h1>Contact Manager App</h1>
+      <p>Using handlebars and vanilla JS</p>
+    </div>
   </header>
 
   <div class="actionBar">
-    <button id="addBtn">Add Contact</button>
-    <input id="searchBox" type="search" placeholder="search">
+    <button id="addBtn" class="btn">Add Contact</button>
+    <input id="searchBox" type="search" placeholder="Search for name or tags">
   </div>
 
   <ul id="contactsList"></ul>
@@ -28,23 +30,26 @@
     <form action="" data-id="{{#if (isdefined id)}}{{id}}{{else}}{{/if}}">
       <div class="form-name">
         <label for="full_name">Full name:</label>
-        <input type="text" name="full_name" value="{{#if (isdefined full_name)}}{{full_name}}{{else}}{{/if}}">
-      </div>
-      <div class="form-email">
-        <label for="email">Email:</label>
-        <input type="email" name="email" value="{{#if (isdefined email)}}{{email}}{{else}}{{/if}}">
+        <input class="form-input" type="text" name="full_name" value="{{#if (isdefined full_name)}}{{full_name}}{{else}}{{/if}}">
+        <small id="name-validation" class="validation-text hide">Please enter a valid name.</small>
       </div>
       <div class="form-phonenumber">
         <label for="phone_number">Phone Number:</label>
-        <input type="tel" name="phone_number" value="{{#if (isdefined phone_number)}}{{phone_number}}{{else}}{{/if}}">
+        <input class="form-input" type="tel" name="phone_number" value="{{#if (isdefined phone_number)}}{{phone_number}}{{else}}{{/if}}">
+        <small id="phone-validation" class="validation-text hide" hidden>Please enter a valid phone number.</small>
+      </div>
+      <div class="form-email">
+        <label for="email">Email:</label>
+        <input class="form-input" type="email" name="email" value="{{#if (isdefined email)}}{{email}}{{else}}{{/if}}">
+        <small id="email-validation" class="validation-text hide" hidden>Please enter a valid email.</small>
       </div>
       <div class="form-tags">
         <label for="tags">Tags:</label>
-        <input type="text" name="tags" value="{{#if (isdefined tags)}}{{tags}}{{else}}{{/if}}">
+        <input class="form-input" type="text" name="tags" value="{{#if (isdefined tags)}}{{tags}}{{else}}{{/if}}">
       </div>
       <div class="form-buttons">
-        <input type="submit" id="{{#if (isdefined id)}}editSubmitBtn{{else}}addSubmitBtn{{/if}}">
-        <button id="cancelBtn">Cancel</button>
+        <input type="submit" class="btn" id="{{#if (isdefined id)}}editSubmitBtn{{else}}addSubmitBtn{{/if}}">
+        <button id="cancelBtn" class="btn">Cancel</button>
       </div>
     </form>
   </script>
@@ -57,10 +62,10 @@
         </div>
         <div class="contact-details">
           <dl>
+            <dt>Phone Number:</dt>
+            <dd>{{phone_number}}</dd>
             <dt>Email:</dt>
             <dd>{{email}}</dd>
-            <dt>Phone Number</dt>
-            <dd>{{phone_number}}</dd>
           </dl>
         </div>
         <div class=contact-tags>
@@ -76,17 +81,22 @@
           </p>
         </div>
         <div class="contact-action-btn">
-          <button id='editBtn'>Edit</button>
-          <button id='deleteBtn'>Delete</button>
+          <button id='editBtn' class="btn">Edit</button>
+          <button id='deleteBtn' class="btn">Delete</button>
         </div>
       </li>
     {{/each}}
   </script>
 
   <script id="tag" type="text/x-handlebars">
-    <strong>{{this}}</strong>
+    <span class='atag'>{{this}}</span>
   </script>
 
-  <script type="module" src="/javascripts/app.js"></script>
+  <div class="footer">
+    <p>Developed by <a href="https://github.com/anotherainaa">Ainaa</a> for a <a href="https://launchschool.com">Launch School</a> project.</p>
+  </div>
+</div> 
+
+  <script type="module" src="/javascripts/controller.js"></script>
 </body>
 </html>

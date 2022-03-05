@@ -30,11 +30,6 @@ class Model {
       });
       request.send();
     });
-    
-    // # Async / await way
-    // let contacts = await fetch("/api/contacts").then(res => res.json());
-    // return contacts;
-    // Question, can I use responseType with async/await, if so how?
   }
 
   getContact(contactId) {
@@ -126,4 +121,4 @@ class Model {
   }
 }
 
-export default Model;
+export default new Model();
